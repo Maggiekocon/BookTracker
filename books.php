@@ -48,9 +48,9 @@ $key = 'AIzaSyDGnbO9SfFZ9ZjUDSVTvilzKBvxErrda6Q';
 
         echo '<hr>';
 
-        // echo '<pre>';
-        // print_r($data);
-        // echo '</pre>';
+        echo '<pre>';
+        print_r($data);
+        echo '</pre>';
 
         ?>
 
