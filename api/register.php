@@ -5,33 +5,43 @@ include("../includes/db.php");
 $username = $conn->real_escape_string($_POST['username']);
 $password = $_POST['password'];
 $confirm = $_POST['confirm'];
-$firstname = $conn->real_escape_string($_POST['firstname']);
-$lastname = $conn->real_escape_string($_POST['lastname']);
+$first_name = $conn->real_escape_string($_POST['first_name']);
+$last_name = $conn->real_escape_string($_POST['last_name']);
 $email = $conn->real_escape_string($_POST['email']);
-$phone_number = $conn->real_escape_string($_POST['phone_number']);
-$dob = $conn->real_escape_string($_POST['dob']);
 
+// Generate timestamp
+$created_at = date("Y-m-d H:i:s");
+
+// Check if passwords match
 if ($password !== $confirm) {
     echo "Passwords do not match";
     exit();
 }
 
-if (empty($username) || empty($password) || empty($firstname) || empty($email)) {
+// Validate email format
+if (empty($username) || empty($password) || empty($first_name) || empty($email)) {
     echo "Please fill in all required fields";
     exit();
 }
 
-// Hash the password before storing it in the database
+// Hash password
 $hashed = password_hash($password, PASSWORD_DEFAULT);
 
-// Check if the username already exists
-$check = $conn->query("SELECT * FROM user WHERE username='$username'");
+// Check if username exists
+$check = $conn->query("SELECT * FROM users WHERE username='$username'");
 
 if ($check->num_rows > 0) {
     echo "Username already exists";
-} else {
-    $conn->query("INSERT INTO user (username, password, first_name, last_name, email, phone_number, dob) VALUES ('$username', '$hashed', '$firstname', '$lastname', '$email', '$phone_number', '$dob')");
+    exit();
+}
+
+// Insert new user
+$result = $conn->query("INSERT INTO users (username, password, first_name, last_name, email, created_at) VALUES ('$username', '$hashed', '$first_name', '$last_name', '$email', '$created_at')");
+
+if ($result) {
     header("Location: ../public/login.html");
     exit();
+} else {
+    echo "Error: " . $conn->error;
 }
 ?>
