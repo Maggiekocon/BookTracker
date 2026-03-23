@@ -91,7 +91,7 @@ CREATE TABLE saved (
     user_id INT NOT NULL,
     isbn VARCHAR(13) NOT NULL,
     saved_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    category VARCHAR(20) NOT NULL,
+    category ENUM('already_read', 'reading', 'read_next') NOT NULL,
 
     PRIMARY KEY (user_id, isbn),
 
