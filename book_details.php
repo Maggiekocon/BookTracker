@@ -84,9 +84,9 @@ if($id !== '') {
                 $stmt->execute();
                 $result = $stmt->get_result();
 
+                 // Insert book
                 if ($result->num_rows == 0) {
 
-                    // Insert book
                     $stmt = $conn->prepare("
                         INSERT INTO BOOKS 
                         (isbn, title, description, cover_url, genre, page_count, average_rating, buy_link)
@@ -109,6 +109,46 @@ if($id !== '') {
                         die("Book insert failed: " . $stmt->error);
                     }
                 }
+                //insert Author and insert bridge table
+                if (isset($volume['authors'])) {
+
+                    foreach ($volume['authors'] as $author_name) {
+
+                        // Check if author exists
+                        $stmt = $conn->prepare("SELECT author_id FROM authors WHERE name = ?");
+                        $stmt->bind_param("s", $author_name);
+                        $stmt->execute();
+                        $result = $stmt->get_result();
+
+                        if ($row = $result->fetch_assoc()) {
+                            $author_id = $row['author_id'];
+                        } else {
+                            // Insert new author
+                            $stmt = $conn->prepare("INSERT INTO authors (name) VALUES (?)");
+                            $stmt->bind_param("s", $author_name);
+
+                            if (!$stmt->execute()) {
+                                die("Author insert failed: " . $stmt->error);
+                            }
+
+                            $author_id = $conn->insert_id;
+                        }
+
+                        // Insert into bridge table
+                        $stmt = $conn->prepare("
+                            INSERT INTO book_author (isbn, author_id)
+                            VALUES (?, ?)
+                            ON DUPLICATE KEY UPDATE isbn = isbn
+                        ");
+
+                        $stmt->bind_param("si", $isbn, $author_id);
+
+                        if (!$stmt->execute()) {
+                            echo "Bridge insert failed: " . $stmt->error;
+                        }
+                    }
+                }
+
 
                 //  Insert into SAVED
                 $stmt = $conn->prepare("
