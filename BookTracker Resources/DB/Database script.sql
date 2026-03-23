@@ -141,8 +141,8 @@ INSERT INTO reviews (user_id, isbn, comment, rating) VALUES
 (5, '9780062315007', 'Fun adventure.', 4);
 
 INSERT INTO saved (user_id, isbn, category) VALUES
-(1, '9780061122415', 'favorites'),
-(2, '9780439708180', 'reading'),
-(3, '9780060850524', 'wishlist'),
-(4, '9780451524935', 'favorites'),
+(1, '9780061122415', 'reading'),
+(2, '9780439708180', 'read_next'),
+(3, '9780060850524', 'already_read'),
+(4, '9780451524935', 'read_next'),
 (5, '9780062315007', 'reading');
