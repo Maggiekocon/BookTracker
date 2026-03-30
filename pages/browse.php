@@ -1,5 +1,5 @@
 <?php
-$key = 'AIzaSyDGnbO9SfFZ9ZjUDSVTvilzKBvxErrda6Q';
+$key = 'Public_key';
 $books_per_page = 40;
 $maxApiItems = 1000; // Google Books API limit
 

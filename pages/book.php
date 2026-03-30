@@ -5,7 +5,7 @@ ini_set('display_errors', 1);
 // Include the connection file
 include("../includes/db.php");
 
-$key = 'AIzaSyDGnbO9SfFZ9ZjUDSVTvilzKBvxErrda6Q';
+$key = 'Public_key';
 
 $id = htmlspecialchars($_GET['id'] ?? '');
 
