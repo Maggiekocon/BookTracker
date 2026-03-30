@@ -78,6 +78,7 @@ if($id !== '') {
 
                 $user_id = 1; //  replace later with logged-in user
 
+
                 // Check if book exists
                 $stmt = $conn->prepare("SELECT isbn FROM BOOKS WHERE isbn = ?");
                 $stmt->bind_param("s", $isbn);
@@ -159,6 +160,7 @@ if($id !== '') {
 
                 $stmt->bind_param("iss", $user_id, $isbn, $category);
 
+                // replace with javascript pop - up
                 if ($stmt->execute()) {
                     echo "<p><strong>Saved as: $category</strong></p>";
                 } else {
@@ -208,3 +210,99 @@ if($id !== '') {
 }
 
 ?>
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Book Details | BookTracker</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <!-- Bootstrap 5 -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <!-- Navbar -->
+  <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <div class="container">
+      <a class="navbar-brand" href="dashboard.html">BookTracker</a>
+
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav me-auto">
+          <li class="nav-item">
+            <a class="nav-link" href="dashboard.html">Home</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="browse.html">Search</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="mybooks.html">My Books</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="account.html">Account</a>
+          </li>
+        </ul>
+
+        <a href="login.html" class="btn btn-outline-light">Logout</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Book Details Section -->
+  <div class="container py-5">
+    <div class="mb-4">
+      <h2 class="section-title">Book Details</h2>
+      <p class="section-subtitle">View full information about this book and save it to your library.</p>
+    </div>
+
+    <div class="card p-4">
+      <div class="row g-4 align-items-start">
+
+        <!-- Book Cover -->
+        <div class="col-md-4">
+          <div class="book-placeholder rounded">Book Cover</div>
+        </div>
+
+        <!-- Book Info -->
+        <div class="col-md-8">
+          <h2 class="mb-3">Book Title</h2>
+
+          <div class="mb-3">
+            <p class="mb-2"><strong>Author:</strong> Author Name</p>
+            <p class="mb-2"><strong>ISBN:</strong> 1234567890</p>
+            <p class="mb-2"><strong>Category:</strong> Fiction</p>
+            <p class="mb-2"><strong>Rating:</strong> 4.5 / 5</p>
+          </div>
+
+          <div class="mb-4">
+            <h5>Description</h5>
+            <p class="text-muted">
+              This is where the book description will go. It can include a short summary of the story,
+              the main ideas, or important information the user may want to know before saving the book.
+            </p>
+          </div>
+
+          <!-- Action Buttons -->
+          <div class="d-flex flex-wrap gap-2">
+            <a href="mybooks.html" class="btn btn-primary">Add to Library</a>
+            <a href="mybooks.html" class="btn btn-outline-primary">Currently Reading</a>
+            <a href="mybooks.html" class="btn btn-outline-success">Already Read</a>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- Bootstrap JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
+
