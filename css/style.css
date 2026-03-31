@@ -1,0 +1,83 @@
+* {
+    box-sizing: border-box;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f8f6f2;
+    color: #222;
+}
+
+.navbar {
+    background-color: #1e3a5f !important;
+}
+
+.navbar-brand {
+    font-weight: bold;
+    font-size: 22px;
+}
+
+.nav-link {
+    font-weight: 500;
+}
+
+.card {
+    border: none;
+    border-radius: 16px;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
+}
+
+.card:hover {
+    transform: translateY(-4px);
+    transition: 0.3s ease;
+}
+
+h1 {
+    text-align: center;
+    color: #1e3a5f;
+    font-weight: bold;
+}
+
+.btn-primary {
+    background-color: #4ea8de;
+    border: none;
+    border-radius: 10px;
+    padding: 10px 16px;
+}
+
+.btn-primary:hover {
+    background-color: #1e3a5f;
+}
+
+.form-link {
+    text-align: center;
+    margin-top: 15px;
+}
+
+.section-title {
+    font-size: 28px;
+    font-weight: 700;
+    color: #1e3a5f;
+}
+
+.section-subtitle {
+    color: #666;
+    margin-bottom: 20px;
+}
+
+.book-placeholder {
+    height: 220px;
+    background: linear-gradient(135deg, #9aa5b1, #6c757d);
+    color: white;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-top-left-radius: 16px;
+    border-top-right-radius: 16px;
+    font-weight: bold;
+}
+
+form input[type="search"] {
+    border-radius: 10px;
+    padding: 10px;
+}
