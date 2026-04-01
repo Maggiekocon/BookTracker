@@ -4,7 +4,7 @@ ini_set('display_errors', 1);
 
 include("../includes/db.php");
 
-$key = 'AIzaSyBq23gLu-fuNqnPpwQsXNjX9r_4VrqTH1w';
+$key = '';
 
 $id = htmlspecialchars($_GET['id'] ?? '');
 $data = null;
