@@ -2,16 +2,16 @@
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
-// Include the connection file
 include("../includes/db.php");
 
-$key = 'Public_key';
+$key = 'AIzaSyBq23gLu-fuNqnPpwQsXNjX9r_4VrqTH1w';
 
 $id = htmlspecialchars($_GET['id'] ?? '');
-
 $data = null;
-$message = '';
 
+/* =========================
+   FETCH BOOK DATA (GET)
+========================= */
 if ($id !== '') {
 
     $url = "https://www.googleapis.com/books/v1/volumes/".$id."?key=".$key;
@@ -28,7 +28,6 @@ if ($id !== '') {
 
         $volume = $data['volumeInfo'];
 
-        // Extract data
         $title = $volume['title'] ?? '';
         $authors = $volume['authors'] ?? [];
         $description = $volume['description'] ?? '';
@@ -49,61 +48,68 @@ if ($id !== '') {
         }
         if (!$isbn) $isbn = $data['id'];
 
-        // Genre cleanup
+        // Genre
         $genre = '';
         if (isset($volume['categories'])) {
             $parts = explode('/', $volume['categories'][0]);
             $genre = trim($parts[0]);
         }
+    }
+}
 
-        // HANDLE SAVE -- ensure this does not go to next page so when you pree <- you go directly to search page
-        if (isset($_POST['category'])) {
+/* =========================
+   HANDLE AJAX SAVE (POST)
+========================= */
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['category'])) {
 
-            $allowed = ['read_next', 'reading', 'already_read'];
+    header('Content-Type: application/json');
 
-            if (in_array($_POST['category'], $allowed)) {
+    $allowed = ['read_next', 'reading', 'already_read'];
 
-                $category = $_POST['category'];
-                $user_id = 1;
+    if (in_array($_POST['category'], $allowed)) {
 
-                // Insert BOOK
-                $stmt = $conn->prepare("SELECT isbn FROM BOOKS WHERE isbn = ?");
-                $stmt->bind_param("s", $isbn);
-                $stmt->execute();
-                $resultCheck = $stmt->get_result();
+        $category = $_POST['category'];
+        $user_id = 1; // TODO: replace with session later
 
-                if ($resultCheck->num_rows == 0) {
+        // Insert book if not exists
+        $stmt = $conn->prepare("SELECT isbn FROM BOOKS WHERE isbn = ?");
+        $stmt->bind_param("s", $isbn);
+        $stmt->execute();
+        $resultCheck = $stmt->get_result();
 
-                    $stmt = $conn->prepare("
-                        INSERT INTO BOOKS 
-                        (isbn, title, description, cover_url, genre, page_count, average_rating, buy_link)
-                        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-                    ");
+        if ($resultCheck->num_rows == 0) {
+            $stmt = $conn->prepare("
+                INSERT INTO BOOKS 
+                (isbn, title, description, cover_url, genre, page_count, average_rating, buy_link)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            ");
 
-                    $stmt->bind_param(
-                        "sssssids",
-                        $isbn, $title, $description, $cover,
-                        $genre, $page_count, $rating, $buy_link
-                    );
+            $stmt->bind_param(
+                "sssssids",
+                $isbn, $title, $description, $cover,
+                $genre, $page_count, $rating, $buy_link
+            );
 
-                    $stmt->execute();
-                }
+            $stmt->execute();
+        }
 
-                // SAVE CATEGORY
-                $stmt = $conn->prepare("
-                    INSERT INTO SAVED (USER_ID, ISBN, CATEGORY)
-                    VALUES (?, ?, ?)
-                    ON DUPLICATE KEY UPDATE CATEGORY = VALUES(CATEGORY)
-                ");
+        // Save category
+        $stmt = $conn->prepare("
+            INSERT INTO SAVED (USER_ID, ISBN, CATEGORY)
+            VALUES (?, ?, ?)
+            ON DUPLICATE KEY UPDATE CATEGORY = VALUES(CATEGORY)
+        ");
 
-                $stmt->bind_param("iss", $user_id, $isbn, $category);
+        $stmt->bind_param("iss", $user_id, $isbn, $category);
 
-                if ($stmt->execute()) {
-                    $message = "Saved as: " . str_replace('_', ' ', $category);
-                }
-            }
+        if ($stmt->execute()) {
+            echo json_encode(["status" => "success"]);
+            exit;
         }
     }
+
+    echo json_encode(["status" => "error"]);
+    exit;
 }
 ?>
 
@@ -116,7 +122,23 @@ if ($id !== '') {
 
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 <link rel="stylesheet" href="css/style.css">
+<style> 
+  .book-cover-wrapper { 
+    width: 100%;
+    height: 100%; 
+    min-height: 350px; /* controls size */ 
+    overflow: hidden; 
+    border-radius: 0.5rem; 
+  } 
+  .book-cover { 
+    width: 100%; 
+    height: 100%; 
+    object-fit: contain; 
+  } 
+  
+</style>
 </head>
+
 <body>
 
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
@@ -152,26 +174,18 @@ if ($id !== '') {
 
   <h2 class="mb-4">Book Details</h2>
 
-  <?php if ($message): ?>
-    <div class="alert alert-success"><?php echo $message; ?></div>
-  <?php endif; ?>
-
   <?php if ($data): ?>
   <div class="card p-4">
-    <div class="row g-4">
+    <div class="row g-4 book-cover-wrapper">
 
       <!-- Cover -->
-        <div class="col-md-4">
-            <div class="book-cover-wrapper">
-                <?php if ($cover): ?>
-                <img src="<?php echo $cover; ?>" class="book-cover">
-                <?php else: ?>
-                <div class="bg-light d-flex align-items-center justify-content-center h-100">
-                    No Image
-                </div>
-                <?php endif; ?>
-            </div>
-        </div>
+      <div class="col-md-4 ">
+        <?php if ($cover): ?>
+          <img src="<?php echo $cover; ?>" class="img-fluid book-cover">
+        <?php else: ?>
+          <div class="bg-light p-5 text-center">No Image</div>
+        <?php endif; ?>
+      </div>
 
       <!-- Info -->
       <div class="col-md-8">
@@ -185,30 +199,20 @@ if ($id !== '') {
         <p><strong>Rating:</strong> <?php echo $rating; ?></p>
 
         <?php if ($buy_link): ?>
-          <a href="<?php echo $buy_link; ?>" target="_blank" class="btn btn-sm btn-outline-secondary mb-3">
+          <a href="<?php echo $buy_link; ?>" target="_blank" class="btn btn-outline-secondary mb-3">
             Buy Book
           </a>
         <?php endif; ?>
 
         <h5>Description</h5>
-        <p class="text-muted"><?php echo $description ?: 'No description available.'; ?></p>
+        <p><?php echo $description ?: 'No description available.'; ?></p>
 
-        <!-- BUTTONS -->
-        <form method="POST" class="d-flex gap-2 flex-wrap">
-
-          <button name="category" value="read_next" class="btn btn-primary">
-            Read Next
-          </button>
-
-          <button name="category" value="reading" class="btn btn-outline-primary">
-            Currently Reading
-          </button>
-
-          <button name="category" value="already_read" class="btn btn-outline-success">
-            Already Read
-          </button>
-
-        </form>
+        <!-- SAVE BUTTONS -->
+        <div class="d-flex gap-2 flex-wrap mt-3">
+          <button class="btn btn-primary save-btn" data-category="read_next">Read Next</button>
+          <button class="btn btn-outline-primary save-btn" data-category="reading">Currently Reading</button>
+          <button class="btn btn-outline-success save-btn" data-category="already_read">Already Read</button>
+        </div>
 
       </div>
     </div>
@@ -219,24 +223,53 @@ if ($id !== '') {
 
 </div>
 
+<!-- ✅ JAVASCRIPT FIX -->
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+
+  document.querySelectorAll('.save-btn').forEach(button => {
+    button.addEventListener('click', function () {
+
+      const category = this.dataset.category;
+      const clickedBtn = this;
+
+      fetch(window.location.href, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded'
+        },
+        body: 'category=' + encodeURIComponent(category)
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.status === 'success') {
+
+          showSavedMessage();
+
+          // clickedBtn.innerText = "Saved ✓";
+          // clickedBtn.disabled = true;
+        }
+      });
+
+    });
+  });
+
+  function showSavedMessage() {
+    let alert = document.createElement('div');
+    alert.className = 'alert alert-success position-fixed top-0 end-0 m-3';
+    alert.innerText = 'Book saved';
+
+    document.body.appendChild(alert);
+
+    setTimeout(() => {
+      alert.remove();
+    }, 2000);
+  }
+
+});
+</script>
+
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
 </body>
-
-    <style>
-        .book-cover-wrapper {
-            width: 100%;
-            height: 100%;
-            min-height: 350px; /* controls size */
-            overflow: hidden;
-            border-radius: 0.5rem;
-
-            }
-
-        .book-cover {
-            
-            width: 100%;
-            height: 100%;
-            object-fit: contain;
-}
-    </style>
 </html>
