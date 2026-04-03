@@ -3,7 +3,7 @@
 // Database configuration
 $db_host = 'localhost';       // Database host
 $db_user = 'root';   // Database username
-$db_pass = 'Passw0rd';   // Database password
+$db_pass = '';   // Database password
 $db_name = 'booktrackerdb';   // Database name
 
 // Create a new MySQLi connection
