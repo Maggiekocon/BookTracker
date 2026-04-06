@@ -1,4 +1,14 @@
 <?php
+session_start();
+include("../includes/db.php");
+
+// // enable these features when fixed
+// // Check if user is logged in
+// if (!isset($_SESSION['user_id'])) {
+//     header("Location: ../public/login.html");
+//     exit();
+// }
+
 $key = 'public_key';
 $books_per_page = 40;
 $maxApiItems = 1000; // Google Books API limit

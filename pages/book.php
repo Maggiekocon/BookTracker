@@ -1,8 +1,17 @@
 <?php
+session_start();
+include("../includes/db.php");
+
+// // enable these features when fixed
+// // Check if user is logged in
+// if (!isset($_SESSION['user_id'])) {
+//     header("Location: ../public/login.html");
+//     exit();
+// }
+
+// report errors
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
-
-include("../includes/db.php");
 
 $key = 'public_key';
 
@@ -69,7 +78,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['category'])) {
     if (in_array($_POST['category'], $allowed)) {
 
         $category = $_POST['category'];
-        $user_id = 1; // TODO: replace with session later
+        //$user_id = $_SESSION['user_id'] add when login works
+        $user_id = 1; 
 
         // Insert book if not exists
         $stmt = $conn->prepare("SELECT isbn FROM BOOKS WHERE isbn = ?");
