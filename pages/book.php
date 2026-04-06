@@ -4,7 +4,7 @@ ini_set('display_errors', 1);
 
 include("../includes/db.php");
 
-$key = '';
+$key = 'public_key';
 
 $id = htmlspecialchars($_GET['id'] ?? '');
 $data = null;
