@@ -1,28 +1,27 @@
 <?php
-session_start();
-include("../includes/db.php");
 
-// // enable these features when fixed
-// // Check if user is logged in
-// if (!isset($_SESSION['user_id'])) {
-//     header("Location: ../public/login.html");
-//     exit();
-// }
-
-// report errors
+// Set to report all errors -- For DEBUG mode
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
-$key = 'public_key';
+// Start session
+session_start();
+include("../includes/db.php");
 
-$id = htmlspecialchars($_GET['id'] ?? '');
+// Check if user is logged in
+if (!isset($_SESSION['user_id'])) {
+    header("Location: ../public/login.html");
+    exit();
+}
+
+// Connect to Google books API
+$key = 'AIzaSyBq23gLu-fuNqnPpwQsXNjX9r_4VrqTH1w';
+
+$id = htmlspecialchars($_GET['id'] ?? ''); // ID sent from browse.php
 $data = null;
 
-/* =========================
-   FETCH BOOK DATA (GET)
-========================= */
 if ($id !== '') {
-
+    // API query 
     $url = "https://www.googleapis.com/books/v1/volumes/".$id."?key=".$key;
 
     $ch = curl_init();
@@ -33,6 +32,7 @@ if ($id !== '') {
 
     $data = json_decode($result, true);
 
+    // Select and save attributes in variables
     if (!isset($data['error'])) {
 
         $volume = $data['volumeInfo'];
@@ -66,11 +66,10 @@ if ($id !== '') {
     }
 }
 
-/* =========================
-   HANDLE AJAX SAVE (POST)
-========================= */
+// Save book details 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['category'])) {
 
+    // ensures page does not reload
     header('Content-Type: application/json');
 
     $allowed = ['read_next', 'reading', 'already_read'];
@@ -78,10 +77,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['category'])) {
     if (in_array($_POST['category'], $allowed)) {
 
         $category = $_POST['category'];
-        //$user_id = $_SESSION['user_id'] add when login works
-        $user_id = 1; 
+        $user_id = $_SESSION['user_id']; 
 
-        // Insert book if not exists
+        // Insert into BOOKS (if book is not already there)
         $stmt = $conn->prepare("SELECT isbn FROM BOOKS WHERE isbn = ?");
         $stmt->bind_param("s", $isbn);
         $stmt->execute();
@@ -102,8 +100,40 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['category'])) {
 
             $stmt->execute();
         }
+        // Insert AUTHORS and BOOK_AUTHORS (if author(s) are not already there)
+        if (!empty($authors)) {
 
-        // Save category
+            foreach ($authors as $authorName) {
+
+                // Check if author already exists
+                $stmt = $conn->prepare("SELECT author_id FROM authors WHERE name = ?");
+                $stmt->bind_param("s", $authorName);
+                $stmt->execute();
+                $result = $stmt->get_result();
+
+                if ($row = $result->fetch_assoc()) {
+                    // Author exists
+                    $author_id = $row['author_id'];
+                } else {
+                    // 2. Insert new author
+                    $stmt = $conn->prepare("INSERT INTO authors (name) VALUES (?)");
+                    $stmt->bind_param("s", $authorName);
+                    $stmt->execute();
+
+                    $author_id = $conn->insert_id;
+                }
+
+                // Insert into bridge table (avoid duplicates)
+                $stmt = $conn->prepare("
+                    INSERT IGNORE INTO book_author (isbn, author_id)
+                    VALUES (?, ?)
+                ");
+                $stmt->bind_param("si", $isbn, $author_id);
+                $stmt->execute();
+            }
+        }        
+
+        // Insert into SAVED
         $stmt = $conn->prepare("
             INSERT INTO SAVED (USER_ID, ISBN, CATEGORY)
             VALUES (?, ?, ?)
@@ -150,6 +180,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['category'])) {
 </head>
 
 <body>
+<!-- Navbar -->
 
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
     <div class="container">
@@ -162,7 +193,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['category'])) {
       <div class="collapse navbar-collapse" id="navbarNav">
         <ul class="navbar-nav me-auto">
           <li class="nav-item">
-            <a class="nav-link" href="dashboard.php">Home</a>
+            <a class="nav-link active" href="dashboard.php">Home</a>
           </li>
           <li class="nav-item">
             <a class="nav-link" href="browse.php">Search</a>
@@ -175,10 +206,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['category'])) {
           </li>
         </ul>
 
-        <a href="login.html" class="btn btn-outline-light">Logout</a>
+        <a href="../api/logout.php" class="btn btn-outline-light">Logout</a>
       </div>
     </div>
 </nav>
+
+<!-- Page Content -->
 
 <div class="container py-5">
 
@@ -188,7 +221,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['category'])) {
   <div class="card p-4">
     <div class="row g-4 book-cover-wrapper">
 
-      <!-- Cover -->
+      <!-- Cover (left column)-->
       <div class="col-md-4 ">
         <?php if ($cover): ?>
           <img src="<?php echo $cover; ?>" class="img-fluid book-cover">
@@ -197,7 +230,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['category'])) {
         <?php endif; ?>
       </div>
 
-      <!-- Info -->
+      <!-- Info (right column)-->
       <div class="col-md-8">
 
         <h2><?php echo $title; ?></h2>
@@ -233,7 +266,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['category'])) {
 
 </div>
 
-<!-- ✅ JAVASCRIPT FIX -->
+<!-- keep page from reloading when book is saved -->
 <script>
 document.addEventListener('DOMContentLoaded', function () {
 
@@ -264,6 +297,8 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   });
 
+  //display success message
+
   function showSavedMessage() {
     let alert = document.createElement('div');
     alert.className = 'alert alert-success position-fixed top-0 end-0 m-3';
@@ -271,6 +306,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     document.body.appendChild(alert);
 
+    // remove message after specified time
     setTimeout(() => {
       alert.remove();
     }, 2000);

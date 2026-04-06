@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>My Books | BookTracker</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <!-- Bootstrap 5 -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <!-- Navbar -->
+  <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <div class="container">
+      <a class="navbar-brand" href="dashboard.html">BookTracker</a>
+
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+
+      <div class="collapse navbar-collapse" id="navbarNav">
+       <ul class="navbar-nav me-auto">
+          <li class="nav-item">
+            <a class="nav-link active" href="dashboard.php">Home</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="browse.php">Search</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="mybooks.php">My Books</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="account.php">Account</a>
+          </li>
+        </ul>
+
+        <a href="login.html" class="btn btn-outline-light">Logout</a>
+      </div>
+    </div>
+  </nav>
+
+<!-- My Books Section -->
+<div class="container mt-4">
+  <h2>My Books</h2>
+
+  <!-- Currently Reading -->
+  <h4 class="mt-4">Currently Reading</h4>
+  <div class="row">
+    <div class="col-md-3">
+      <div class="card shadow-sm mb-4">
+        <div class="bg-secondary text-white d-flex justify-content-center align-items-center" style="height: 200px;">
+          Book Cover
+        </div>
+        <div class="card-body">
+          <h6 class="card-title">Book Title</h6>
+          <p class="card-text">Author Name</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Read Next -->
+  <h4 class="mt-4">Read Next</h4>
+  <div class="row">
+    <div class="col-md-3">
+      <div class="card shadow-sm mb-4">
+        <div class="bg-secondary text-white d-flex justify-content-center align-items-center" style="height: 200px;">
+          Book Cover
+        </div>
+        <div class="card-body">
+          <h6 class="card-title">Book Title</h6>
+          <p class="card-text">Author Name</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Already Read -->
+  <h4 class="mt-4">Already Read</h4>
+  <div class="row">
+    <div class="col-md-3">
+      <div class="card shadow-sm mb-4">
+        <div class="bg-secondary text-white d-flex justify-content-center align-items-center" style="height: 200px;">
+          Book Cover
+        </div>
+        <div class="card-body">
+          <h6 class="card-title">Book Title</h6>
+          <p class="card-text">Author Name</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

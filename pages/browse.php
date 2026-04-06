@@ -1,16 +1,21 @@
 <?php
+// Set to report all errors -- For DEBUG mode
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
+
+// Start session
 session_start();
 include("../includes/db.php");
 
-// // enable these features when fixed
-// // Check if user is logged in
-// if (!isset($_SESSION['user_id'])) {
-//     header("Location: ../public/login.html");
-//     exit();
-// }
+// Check if user is logged in
+if (!isset($_SESSION['user_id'])) {
+    header("Location: ../public/login.html");
+    exit();
+}
+// Connect to Google books API
 
-$key = 'public_key';
-$books_per_page = 40;
+$key = 'AIzaSyBq23gLu-fuNqnPpwQsXNjX9r_4VrqTH1w';
+$books_per_page = 40; // Books Per Page
 $maxApiItems = 1000; // Google Books API limit
 
 // Default values
@@ -27,7 +32,7 @@ if (isset($_GET['search'])) {
         $encodedSearch = urlencode($search);
         $startIndex = ($page - 1) * $books_per_page;
 
-        // Build Google Books API URL
+        // Query google books API
         $url = "https://www.googleapis.com/books/v1/volumes?q={$encodedSearch}&maxResults={$books_per_page}&startIndex={$startIndex}&key={$key}";
 
         $ch = curl_init();
@@ -46,6 +51,7 @@ if (isset($data['totalItems']) && $data['totalItems'] > 0) {
     $availableItems = min($data['totalItems'], $maxApiItems);
     $totalPages = ceil($availableItems / $books_per_page);
 }
+
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -70,7 +76,7 @@ if (isset($data['totalItems']) && $data['totalItems'] > 0) {
       <div class="collapse navbar-collapse" id="navbarNav">
         <ul class="navbar-nav me-auto">
           <li class="nav-item">
-            <a class="nav-link" href="dashboard.php">Home</a>
+            <a class="nav-link active" href="dashboard.php">Home</a>
           </li>
           <li class="nav-item">
             <a class="nav-link" href="browse.php">Search</a>
@@ -83,7 +89,7 @@ if (isset($data['totalItems']) && $data['totalItems'] > 0) {
           </li>
         </ul>
 
-        <a href="login.html" class="btn btn-outline-light">Logout</a>
+        <a href="../api/logout.php" class="btn btn-outline-light">Logout</a>
       </div>
     </div>
   </nav>
