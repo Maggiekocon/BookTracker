@@ -43,7 +43,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                 $_SESSION['username'] = $user['username'];
 
                 // Redirect to browse page
-                header("Location: browse.php");
+                header("Location: dashboard.php");
                 exit();
             }
         }
