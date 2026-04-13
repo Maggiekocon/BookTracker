@@ -1,10 +1,17 @@
 <?php
+require_once __DIR__ . '/../vendor/autoload.php';
+
+// Load environment variables from .env
+$dotenv = Dotenv\Dotenv::createImmutable(__DIR__ . '/../');
+$dotenv->load();
 
 // Database configuration
-$db_host = 'localhost';       // Database host
-$db_user = 'root';   // Database username
-$db_pass = 'Passw0rd';   // Database password
-$db_name = 'booktrackerdb';   // Database name
+
+$db_host = $_ENV['DB_HOST'];// Database host
+$db_user = $_ENV['DB_USER']; // Database username
+$db_pass = $_ENV['DB_PASS'];// Database password
+$db_name = $_ENV['DB_NAME']; // Database name
+$key = $_ENV['API_KEY']; // API key
 
 // Create a new MySQLi connection
 $conn = new mysqli($db_host, $db_user, $db_pass, $db_name);

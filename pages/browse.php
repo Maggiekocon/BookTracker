@@ -14,7 +14,6 @@ if (!isset($_SESSION['user_id'])) {
 }
 // Connect to Google books API
 
-$key = 'AIzaSyBq23gLu-fuNqnPpwQsXNjX9r_4VrqTH1w';
 $books_per_page = 40; // Books Per Page
 $maxApiItems = 1000; // Google Books API limit
 

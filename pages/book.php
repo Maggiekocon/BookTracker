@@ -15,7 +15,6 @@ if (!isset($_SESSION['user_id'])) {
 }
 
 // Connect to Google books API
-$key = 'AIzaSyBq23gLu-fuNqnPpwQsXNjX9r_4VrqTH1w';
 
 $id = htmlspecialchars($_GET['id'] ?? ''); // ID sent from browse.php
 $data = null;
