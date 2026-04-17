@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 <?php
 session_start();
 include("../includes/db.php");
@@ -20,6 +21,8 @@ if ($result->num_rows > 0) {
     exit();
 }
 ?>
+=======
+>>>>>>> main
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -29,11 +32,23 @@ if ($result->num_rows > 0) {
 
   <!-- Bootstrap 5 -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+<<<<<<< HEAD
   <link rel="stylesheet" href="css/style.css">
+=======
+  <link rel="stylesheet" href="../css/style.css">
+  <script>
+   fetch("../includes/top-menu.inc")
+      .then(response => response.text())
+      .then(data => {
+        document.getElementById("navbar").innerHTML = data;
+      });
+</script>
+>>>>>>> main
 </head>
 <body>
 
   <!-- Navbar -->
+<<<<<<< HEAD
   <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
     <div class="container">
       <a class="navbar-brand" href="dashboard.html">BookTracker</a>
@@ -62,6 +77,9 @@ if ($result->num_rows > 0) {
       </div>
     </div>
   </nav>
+=======
+  <nav id="navbar"></nav>
+>>>>>>> main
 
 <!-- Account Info -->
 <div class="container mt-5">
@@ -69,6 +87,7 @@ if ($result->num_rows > 0) {
     <h2>Account Details</h2>
     <hr>
 
+<<<<<<< HEAD
     <p><strong>First Name:</strong> <?= $user['first_name'] ?></p>
     <p><strong>Last Name:</strong> <?= $user['last_name'] ?></p>
     <p><strong>Email:</strong> <?= $user['email'] ?></p>
@@ -77,6 +96,15 @@ if ($result->num_rows > 0) {
     <a href="edit_account.php" class="btn btn-primary mt-3">Edit Information</a>
     
     <a href="change_password.php" class="btn btn-warning mt-3">Change Password</a>
+=======
+    <p><strong>First Name:</strong> Dawa</p>
+    <p><strong>Last Name:</strong> Sherpa</p>
+    <p><strong>Email:</strong> dawasherpa@email.com</p>
+    <p><strong>Username:</strong> dawa01</p>
+    <p><strong>Age:</strong> 22</p>
+
+    <button class="btn btn-primary mt-3">Edit Information</button>
+>>>>>>> main
   </div>
 </div>
 

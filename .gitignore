@@ -1,0 +1,9 @@
+.env
+
+/vendor/
+
+composer.json
+
+composer.lock
+
+db.txt

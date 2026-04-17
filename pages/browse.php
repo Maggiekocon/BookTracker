@@ -1,42 +1,75 @@
 <?php
-$key = 'Public_key';
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
+
+session_start();
+include("../includes/db.php");
+
+if (!isset($_SESSION['user_id'])) {
+    header("Location: ../public/login.html");
+    exit();
+}
+
 $books_per_page = 40;
-$maxApiItems = 1000; // Google Books API limit
+$maxApiItems = 1000;
 
 // Default values
-$search = '';
-$page = 1;
-$data = null;
+$search = $_GET['search'] ?? '';
+$page = isset($_GET['page']) ? max(1, intval($_GET['page'])) : 1;
+$filter = $_GET['filter'] ?? '';
 
-// Handle GET search and pagination
-if (isset($_GET['search'])) {
-    $search = htmlspecialchars($_GET['search']);
-    $page = isset($_GET['page']) ? max(1, intval($_GET['page'])) : 1;
+$data = ['items' => [], 'totalItems' => 0];
 
-    if ($search !== '') {
-        $encodedSearch = urlencode($search);
-        $startIndex = ($page - 1) * $books_per_page;
+// Query prefix
+$queryPrefix = "";
 
-        // Build Google Books API URL
-        $url = "https://www.googleapis.com/books/v1/volumes?q={$encodedSearch}&maxResults={$books_per_page}&startIndex={$startIndex}&key={$key}";
+if ($filter === "author") {
+    $queryPrefix = "inauthor:";
+} elseif ($filter === "title") {
+    $queryPrefix = "intitle:";
+}
 
-        $ch = curl_init();
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch, CURLOPT_URL, $url);
-        $result = curl_exec($ch);
+// Run API only if search exists
+if (!empty($search)) {
+
+    $encodedSearch = urlencode($search);
+    $startIndex = ($page - 1) * $books_per_page;
+
+    // Safe key handling
+    $key = $key ?? '';
+
+    $url = "https://www.googleapis.com/books/v1/volumes?q={$queryPrefix}{$encodedSearch}&maxResults={$books_per_page}&startIndex={$startIndex}&key={$key}";
+
+    $ch = curl_init();
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($ch, CURLOPT_URL, $url);
+
+    $result = curl_exec($ch);
+
+    if (curl_errno($ch) || $result === false) {
+        curl_close($ch);
+        $data = ['items' => [], 'totalItems' => 0];
+    } else {
         curl_close($ch);
 
-        $data = json_decode($result, true);
+        $decoded = json_decode($result, true);
+
+        if (is_array($decoded)) {
+            $data = $decoded;
+        } else {
+            $data = ['items' => [], 'totalItems' => 0];
+        }
     }
 }
 
-// Determine total pages based on Google Books API limits
+// Pagination
 $totalPages = 0;
-if (isset($data['totalItems']) && $data['totalItems'] > 0) {
+if (!empty($data['totalItems'])) {
     $availableItems = min($data['totalItems'], $maxApiItems);
     $totalPages = ceil($availableItems / $books_per_page);
 }
 ?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -44,41 +77,21 @@ if (isset($data['totalItems']) && $data['totalItems'] > 0) {
 <title>Search | BookTracker</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="../css/style.css">
+
+<script>
+fetch("../includes/top-menu.inc")
+  .then(response => response.text())
+  .then(data => {
+    document.getElementById("navbar").innerHTML = data;
+  });
+</script>
 </head>
+
 <body>
 
-<!-- Navbar -->
- <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-    <div class="container">
-      <a class="navbar-brand" href="dashboard.html">BookTracker</a>
+<div id="navbar"></div>
 
-      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-        <span class="navbar-toggler-icon"></span>
-      </button>
-
-      <div class="collapse navbar-collapse" id="navbarNav">
-        <ul class="navbar-nav me-auto">
-          <li class="nav-item">
-            <a class="nav-link" href="dashboard.php">Home</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="browse.php">Search</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="mybooks.php">My Books</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="account.php">Account</a>
-          </li>
-        </ul>
-
-        <a href="login.html" class="btn btn-outline-light">Logout</a>
-      </div>
-    </div>
-  </nav>
-
-<!-- Page Content -->
 <div class="container py-5">
 
   <div class="mb-4">
@@ -86,75 +99,119 @@ if (isset($data['totalItems']) && $data['totalItems'] > 0) {
     <p>Find books by title, author, or ISBN.</p>
   </div>
 
-  <!-- Search Form (GET method for clean URLs) -->
+  <!-- Search Form -->
   <div class="card p-3 mb-5">
-    <form method="GET" class="d-flex">
-      <input class="form-control me-2" type="search" name="search"
-             placeholder="Search for books..." value="<?php echo $search; ?>">
-      <button class="btn btn-primary" type="submit">Search</button>
+    <form method="GET" class="row g-2">
+
+      <div class="col-md-6">
+        <input class="form-control" type="search" name="search"
+          placeholder="Search by title or author..."
+          value="<?php echo htmlspecialchars($search); ?>">
+      </div>
+
+      <div class="col-md-4">
+        <select name="filter" class="form-select">
+          <option value="">All Categories</option>
+          <option value="title" <?php echo ($filter === 'title') ? 'selected' : ''; ?>>Title</option>
+          <option value="author" <?php echo ($filter === 'author') ? 'selected' : ''; ?>>Author</option>
+        </select>
+      </div>
+
+      <div class="col-md-2">
+        <button class="btn btn-primary w-100" type="submit">Search</button>
+      </div>
+
     </form>
   </div>
 
-  <!-- Results -->
   <h3 class="mb-4">Search Results</h3>
-  <div class="row g-4">
-    <?php if (isset($data['items']) && count($data['items']) > 0): ?>
-        <?php foreach ($data['items'] as $book): ?>
-            <div class="col-6 col-md-3">
-              <div class="card h-100">
-                <?php if (isset($book['volumeInfo']['imageLinks']['thumbnail'])): ?>
-                    <img src="<?php echo $book['volumeInfo']['imageLinks']['thumbnail']; ?>" class="card-img-top" alt="<?php echo htmlspecialchars($book['volumeInfo']['title']); ?>">
-                <?php else: ?>
-                    <div class="p-5 text-center bg-light">No Image</div>
-                <?php endif; ?>
 
-                <div class="card-body">
-                  <h6 class="card-title"><?php echo $book['volumeInfo']['title'] ?? 'No Title'; ?></h6>
-                  <p class="card-text"><?php echo $book['volumeInfo']['authors'][0] ?? 'Unknown Author'; ?></p>
-                  <a href="book.php?id=<?php echo $book['id']; ?>" class="btn btn-primary btn-sm">View Details</a>
-                </div>
+  <div class="row g-4">
+
+    <?php if (!empty($data['items'])): ?>
+        <?php foreach ($data['items'] as $book): ?>
+
+          <?php
+            $title = $book['volumeInfo']['title'] ?? 'No Title';
+            $authors = $book['volumeInfo']['authors'] ?? [];
+            $author = !empty($authors) ? $authors[0] : 'Unknown Author';
+            $image = $book['volumeInfo']['imageLinks']['thumbnail'] ?? '';
+          ?>
+
+          <div class="col-6 col-md-3">
+            <div class="card h-100">
+
+              <div class="book-placeholder">
+                <?php if (!empty($image)): ?>
+                  <img src="<?php echo htmlspecialchars($image); ?>"
+                       alt="<?php echo htmlspecialchars($title); ?>">
+                <?php else: ?>
+                  <div class="no-image">No Image Available</div>
+                <?php endif; ?>
               </div>
+
+              <div class="card-body">
+                <h6 class="card-title">
+                  <?php echo htmlspecialchars($title); ?>
+                </h6>
+
+                <p class="card-text">
+                  <?php echo htmlspecialchars($author); ?>
+                </p>
+
+                <a href="book_details.php?id=<?php echo urlencode($book['id']); ?>"
+                   class="btn btn-primary btn-sm">
+                  View Details
+                </a>
+              </div>
+
             </div>
+          </div>
+
         <?php endforeach; ?>
-    <?php elseif ($search !== ''): ?>
+    <?php elseif (!empty($search)): ?>
         <p>No results found.</p>
     <?php endif; ?>
+
   </div>
 
   <!-- Pagination -->
   <?php if ($totalPages > 1): ?>
-      <nav aria-label="Page navigation" class="mt-4">
-        <ul class="pagination justify-content-center">
-          <!-- Previous -->
-          <?php if ($page > 1): ?>
-            <li class="page-item">
-              <a class="page-link" href="?search=<?php echo urlencode($search); ?>&page=<?php echo $page-1; ?>">Previous</a>
-            </li>
-          <?php endif; ?>
+    <nav class="mt-4">
+      <ul class="pagination justify-content-center">
 
-          <?php
-          // Show up to 10 pages in pagination
+        <?php if ($page > 1): ?>
+          <li class="page-item">
+            <a class="page-link" href="?search=<?php echo urlencode($search); ?>&page=<?php echo $page - 1; ?>">Previous</a>
+          </li>
+        <?php endif; ?>
+
+        <?php
           $startPage = max(1, $page - 5);
           $endPage = min($totalPages, $page + 4);
-          for ($i = $startPage; $i <= $endPage; $i++):
-          ?>
-            <li class="page-item <?php echo ($i == $page) ? 'active' : ''; ?>">
-              <a class="page-link" href="?search=<?php echo urlencode($search); ?>&page=<?php echo $i; ?>"><?php echo $i; ?></a>
-            </li>
-          <?php endfor; ?>
 
-          <!-- Next -->
-          <?php if ($page < $totalPages): ?>
-            <li class="page-item">
-              <a class="page-link" href="?search=<?php echo urlencode($search); ?>&page=<?php echo $page+1; ?>">Next</a>
-            </li>
-          <?php endif; ?>
-        </ul>
-      </nav>
+          for ($i = $startPage; $i <= $endPage; $i++):
+        ?>
+          <li class="page-item <?php echo ($i == $page) ? 'active' : ''; ?>">
+            <a class="page-link" href="?search=<?php echo urlencode($search); ?>&page=<?php echo $i; ?>">
+              <?php echo $i; ?>
+            </a>
+          </li>
+        <?php endfor; ?>
+
+        <?php if ($page < $totalPages): ?>
+          <li class="page-item">
+            <a class="page-link" href="?search=<?php echo urlencode($search); ?>&page=<?php echo $page + 1; ?>">Next</a>
+          </li>
+        <?php endif; ?>
+
+      </ul>
+    </nav>
   <?php endif; ?>
 
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
 </body>
 </html>

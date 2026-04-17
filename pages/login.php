@@ -4,11 +4,11 @@ include("../includes/db.php");
 
 $error = "";
 
-// If user is already logged in, send them to dashboard
-//if (isset($_SESSION['user_id'])) {
-//    header("Location: ../pages/browse.php");
-//    exit();
-//}
+//If user is already logged in, send them to dashboard
+if (isset($_SESSION['user_id'])) {
+   header("Location: ../pages/browse.php");
+   exit();
+}
 
 // Only process login form when submitted
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
@@ -43,7 +43,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                 $_SESSION['username'] = $user['username'];
 
                 // Redirect to browse page
-                header("Location: ../public/browse.php");
+                header("Location: dashboard.php");
                 exit();
             }
         }
