@@ -1,6 +1,6 @@
 # BookTracker Project Setup
 
-## .env Set-Up Instructions
+## Installation Set-Up Instructions
 
 To run this project you will need to do the following things:
 
