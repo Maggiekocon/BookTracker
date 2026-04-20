@@ -177,8 +177,11 @@ touch .gitignore
 Add:
 
 .env
+
 /vendor/
+
 composer.json
+
 composer.lock
 
 
