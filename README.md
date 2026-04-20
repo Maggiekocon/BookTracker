@@ -104,11 +104,11 @@ php -v
 #### macOS
 Install using Homebrew:
 
-brew install php
+```brew install php```
 
 Verify:
 
-php -v
+```php -v``` 
 
 ---
 
@@ -118,20 +118,20 @@ php -v
 1. Download Composer-Setup.exe.  
 2. Run the installer and follow instructions.  
 3. Verify:
-composer -V
+```composer -V```
 
 
 #### macOS / Linux
 
-php -r "copy('https://getcomposer.org/installer
+```php -r "copy('https://getcomposer.org/installer
 ', 'composer-setup.php');"
 php composer-setup.php
-sudo mv composer.phar /usr/local/bin/composer
+sudo mv composer.phar /usr/local/bin/composer```
 
 
 Verify:
 
-composer -V
+```composer -V```
 
 
 ---
@@ -139,21 +139,17 @@ composer -V
 ### 3. Create a .env File
 
 
-touch .env
+```touch .env```
 
 
 Add the following:
 
 
-API_KEY='your_key'
-
+```API_KEY='your_key'
 DB_HOST=localhost
-
 DB_USER=root
-
 DB_PASS=''
-
-DB_NAME=booktrackerdb
+DB_NAME=booktrackerdb```
 
 
 ---
@@ -161,7 +157,7 @@ DB_NAME=booktrackerdb
 ### 4. Install dotenv Library
 
 
-composer require vlucas/phpdotenv
+```composer require vlucas/phpdotenv```
 
 
 ---
@@ -171,18 +167,15 @@ composer require vlucas/phpdotenv
 
 Create `.gitignore`:
 
-touch .gitignore
+```touch .gitignore```
 
 
 Add:
 
-.env
-
+```.env
 /vendor/
-
 composer.json
-
-composer.lock
+composer.lock```
 
 
 ---
