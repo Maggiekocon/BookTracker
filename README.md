@@ -1,6 +1,6 @@
 # BookTracker Project Setup
 
-## Installation Set-Up Instructions
+## Installation Instructions
 
 To run this project you will need to do the following things:
 
