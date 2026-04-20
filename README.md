@@ -43,14 +43,14 @@ The following instructions will walk you through how to do each of these parts.
 
 2. In phpMyAdmin:  
    - Click “New” in the left sidebar.  
-   - Enter database name: `BookTrackerDB`  
+   - Enter database name: `booktrackerdb`  
    - Click Create  
 
-3. Import the provided database script:  
-   - Click on the newly created database (`BookTrackerDB`)  
+3. Import the provided database script 'db_script.sql':  
+   - Click on the newly created database (`booktrackerdb`)  
    - Go to the Import tab  
    - Click Choose File  
-   - Select the file: `db_script.sql` (or whatever your script is named)  
+   - Select the file: `db_script.sql`   
    - Click Go  
 
 4. Wait for confirmation that the tables were created successfully.  
@@ -146,9 +146,13 @@ Add the following:
 
 
 API_KEY='your_key'
+
 DB_HOST=localhost
+
 DB_USER=root
+
 DB_PASS=''
+
 DB_NAME=booktrackerdb
 
 
