@@ -1,6 +1,6 @@
 # BookTracker Project Setup
 
-## .env Set-Up Instructions
+## Installation Instructions
 
 To run this project you will need to do the following things:
 
@@ -43,14 +43,14 @@ The following instructions will walk you through how to do each of these parts.
 
 2. In phpMyAdmin:  
    - Click “New” in the left sidebar.  
-   - Enter database name: `BookTrackerDB`  
+   - Enter database name: `booktrackerdb`  
    - Click Create  
 
-3. Import the provided database script:  
-   - Click on the newly created database (`BookTrackerDB`)  
+3. Import the provided database script 'db_script.sql':  
+   - Click on the newly created database (`booktrackerdb`)  
    - Go to the Import tab  
    - Click Choose File  
-   - Select the file: `db_script.sql` (or whatever your script is named)  
+   - Select the file: `db_script.sql`   
    - Click Go  
 
 4. Wait for confirmation that the tables were created successfully.  
@@ -104,11 +104,15 @@ php -v
 #### macOS
 Install using Homebrew:
 
+```
 brew install php
+```
 
 Verify:
 
+```
 php -v
+``` 
 
 ---
 
@@ -118,20 +122,26 @@ php -v
 1. Download Composer-Setup.exe.  
 2. Run the installer and follow instructions.  
 3. Verify:
+```
 composer -V
+```
 
 
 #### macOS / Linux
 
+```
 php -r "copy('https://getcomposer.org/installer
 ', 'composer-setup.php');"
 php composer-setup.php
 sudo mv composer.phar /usr/local/bin/composer
+```
 
 
 Verify:
 
+```
 composer -V
+```
 
 
 ---
@@ -139,17 +149,21 @@ composer -V
 ### 3. Create a .env File
 
 
+```
 touch .env
+```
 
 
 Add the following:
 
 
+```
 API_KEY='your_key'
 DB_HOST=localhost
 DB_USER=root
 DB_PASS=''
 DB_NAME=booktrackerdb
+```
 
 
 ---
@@ -157,7 +171,9 @@ DB_NAME=booktrackerdb
 ### 4. Install dotenv Library
 
 
+```
 composer require vlucas/phpdotenv
+```
 
 
 ---
@@ -167,15 +183,19 @@ composer require vlucas/phpdotenv
 
 Create `.gitignore`:
 
+```
 touch .gitignore
+```
 
 
 Add:
 
+```
 .env
 /vendor/
 composer.json
-composer.lock
+composer.locks
+```
 
 
 ---
