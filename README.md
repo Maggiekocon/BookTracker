@@ -194,8 +194,8 @@ Add:
 .env
 /vendor/
 composer.json
-composer.lock
- s```
+composer.locks
+```
 
 
 ---
