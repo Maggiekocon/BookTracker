@@ -1,15 +1,6 @@
 <?php
-error_reporting(E_ALL);
-ini_set('display_errors', 1);
 
-session_start();
-include("../includes/db.php");
-
-if (!isset($_SESSION['user_id'])) {
-    header("Location: ../public/login.html");
-    exit();
-}
-
+// Define books per page and max API items for pagination
 $books_per_page = 40;
 $maxApiItems = 1000;
 
@@ -18,9 +9,10 @@ $search = $_GET['search'] ?? '';
 $page = isset($_GET['page']) ? max(1, intval($_GET['page'])) : 1;
 $filter = $_GET['filter'] ?? '';
 
+// Initialize data array for API response
 $data = ['items' => [], 'totalItems' => 0];
 
-// Query prefix
+// Set query prefix based on filter (author or title)
 $queryPrefix = "";
 
 if ($filter === "author") {
@@ -38,22 +30,28 @@ if (!empty($search)) {
     // Safe key handling
     $key = $key ?? '';
 
+    // Build API URL for Google Books
     $url = "https://www.googleapis.com/books/v1/volumes?q={$queryPrefix}{$encodedSearch}&maxResults={$books_per_page}&startIndex={$startIndex}&key={$key}";
 
+    // Initialize cURL session
     $ch = curl_init();
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
     curl_setopt($ch, CURLOPT_URL, $url);
 
+    // Execute cURL request
     $result = curl_exec($ch);
 
+    // Handle cURL errors
     if (curl_errno($ch) || $result === false) {
         curl_close($ch);
         $data = ['items' => [], 'totalItems' => 0];
     } else {
         curl_close($ch);
 
+        // Decode JSON response
         $decoded = json_decode($result, true);
 
+        // Validate and assign data
         if (is_array($decoded)) {
             $data = $decoded;
         } else {
@@ -62,7 +60,7 @@ if (!empty($search)) {
     }
 }
 
-// Pagination
+// Calculate total pages for pagination
 $totalPages = 0;
 if (!empty($data['totalItems'])) {
     $availableItems = min($data['totalItems'], $maxApiItems);
@@ -79,6 +77,7 @@ if (!empty($data['totalItems'])) {
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 <link rel="stylesheet" href="../css/style.css">
 
+<!-- Fetch and insert top navigation menu -->
 <script>
 fetch("../includes/top-menu.inc")
   .then(response => response.text())
@@ -90,16 +89,18 @@ fetch("../includes/top-menu.inc")
 
 <body>
 
+<!-- Navigation bar placeholder -->
 <div id="navbar"></div>
 
 <div class="container py-5">
 
+  <!-- Page header -->
   <div class="mb-4">
     <h2>Search Books</h2>
     <p>Find books by title, author, or ISBN.</p>
   </div>
 
-  <!-- Search Form -->
+  <!-- Search form -->
   <div class="card p-3 mb-5">
     <form method="GET" class="row g-2">
 
@@ -124,14 +125,17 @@ fetch("../includes/top-menu.inc")
     </form>
   </div>
 
+  <!-- Search results header -->
   <h3 class="mb-4">Search Results</h3>
 
   <div class="row g-4">
 
+    <!-- Loop through API items and display books -->
     <?php if (!empty($data['items'])): ?>
         <?php foreach ($data['items'] as $book): ?>
 
           <?php
+            // Extract book details from API response
             $title = $book['volumeInfo']['title'] ?? 'No Title';
             $authors = $book['volumeInfo']['authors'] ?? [];
             $author = !empty($authors) ? $authors[0] : 'Unknown Author';
@@ -141,6 +145,7 @@ fetch("../includes/top-menu.inc")
           <div class="col-6 col-md-3">
             <div class="card h-100">
 
+              <!-- Book cover placeholder -->
               <div class="book-placeholder">
                 <?php if (!empty($image)): ?>
                   <img src="<?php echo htmlspecialchars($image); ?>"
@@ -150,6 +155,7 @@ fetch("../includes/top-menu.inc")
                 <?php endif; ?>
               </div>
 
+              <!-- Card body with title, author, and link -->
               <div class="card-body">
                 <h6 class="card-title">
                   <?php echo htmlspecialchars($title); ?>
@@ -159,6 +165,7 @@ fetch("../includes/top-menu.inc")
                   <?php echo htmlspecialchars($author); ?>
                 </p>
 
+                <!-- Link to book details page -->
                 <a href="book_details.php?id=<?php echo urlencode($book['id']); ?>"
                    class="btn btn-primary btn-sm">
                   View Details
@@ -170,22 +177,25 @@ fetch("../includes/top-menu.inc")
 
         <?php endforeach; ?>
     <?php elseif (!empty($search)): ?>
+        <!-- No results message -->
         <p>No results found.</p>
     <?php endif; ?>
 
   </div>
 
-  <!-- Pagination -->
+  <!-- Pagination navigation -->
   <?php if ($totalPages > 1): ?>
     <nav class="mt-4">
       <ul class="pagination justify-content-center">
 
+        <!-- Previous button -->
         <?php if ($page > 1): ?>
           <li class="page-item">
             <a class="page-link" href="?search=<?php echo urlencode($search); ?>&page=<?php echo $page - 1; ?>">Previous</a>
           </li>
         <?php endif; ?>
 
+        <!-- Page number links -->
         <?php
           $startPage = max(1, $page - 5);
           $endPage = min($totalPages, $page + 4);
@@ -199,6 +209,7 @@ fetch("../includes/top-menu.inc")
           </li>
         <?php endfor; ?>
 
+        <!-- Next button -->
         <?php if ($page < $totalPages): ?>
           <li class="page-item">
             <a class="page-link" href="?search=<?php echo urlencode($search); ?>&page=<?php echo $page + 1; ?>">Next</a>
@@ -211,6 +222,7 @@ fetch("../includes/top-menu.inc")
 
 </div>
 
+<!-- Include Bootstrap JavaScript -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
 </body>

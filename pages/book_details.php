@@ -1,21 +1,21 @@
 <?php
-
-error_reporting(E_ALL);
-ini_set('display_errors', 1);
-
+// Start session
 session_start();
-include("../includes/db.php");
 
+// Check if User is logged in
 if (!isset($_SESSION['user_id'])) {
-    header("Location: ../public/login.html");
+    header("Location: login.php");
     exit();
 }
+// Save user ID
+$user_id = $_SESSION['user_id'];
 
-/* =========================
-   INPUT DETECTION
-========================= */
-$google_id = $_GET['id'] ?? '';
-$isbn = $_GET['isbn'] ?? '';
+// Connect to Database
+include("../includes/db.php");
+
+//Access ID or ISBN 
+$google_id = $_GET['id'] ?? ''; // Sent from browse.php
+$isbn = $_GET['isbn'] ?? ''; // Sent from dashboard.php or mybooks/php
 
 $book = null;
 $data = null;
@@ -24,9 +24,7 @@ $title = $description = $cover = $genre = $buy_link = '';
 $page_count = $rating = 'N/A';
 $authors = [];
 
-/* =========================
-   CASE 1: GOOGLE BOOKS ID
-========================= */
+//Sent from browse.php -> use API to get book details
 if (!empty($google_id)) {
 
     $url = "https://www.googleapis.com/books/v1/volumes/".$google_id."?key=".$key;
@@ -74,9 +72,7 @@ if (!empty($google_id)) {
     }
 }
 
-/* =========================
-   CASE 2: SAVED BOOK (ISBN)
-========================= */
+//Sent from dashboard.php or mybooks/php -> Use local Database to get book details
 if (!empty($isbn) && empty($title)) {
 
     $stmt = $conn->prepare("SELECT * FROM books WHERE isbn = ?");
@@ -88,6 +84,7 @@ if (!empty($isbn) && empty($title)) {
 
         $book = $result->fetch_assoc();
 
+        // Save book values handle emply values
         $title = $book['title'] ?? '';
         $description = $book['description'] ?? '';
         $cover = $book['cover_url'] ?? '';
@@ -113,11 +110,10 @@ if (!empty($isbn) && empty($title)) {
     }
 }
 
-/* =========================
-   SAVE HANDLER
-========================= */
+// Save book details
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['category'])) {
-
+    
+    // keep system from going to a new page
     header('Content-Type: application/json');
 
     $allowed = ['read_next', 'reading', 'already_read'];
@@ -128,15 +124,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['category'])) {
     }
 
     $category = $_POST['category'];
-    $user_id = $_SESSION['user_id'];
 
-    /* Save book if needed */
+    //Save book if not saved
     if (!empty($isbn)) {
 
+        // Check if book exists in DB
         $stmt = $conn->prepare("SELECT isbn FROM books WHERE isbn = ?");
         $stmt->bind_param("s", $isbn);
         $stmt->execute();
 
+        // Save in BOOKS table
         if ($stmt->get_result()->num_rows == 0 && !empty($title)) {
 
             $stmt = $conn->prepare("
@@ -160,7 +157,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['category'])) {
             $stmt->execute();
         }
 
-        /* Save authors safely */
+        // Save in AUTHORS table 
         if (empty($authors)) {
             $authors = ['Unknown'];
         }
@@ -190,7 +187,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['category'])) {
         }
     }
 
-    /* Save category */
+    // Save in SAVED table (SAVED table = books and users bridge table)
     $stmt = $conn->prepare("
         INSERT INTO SAVED (USER_ID, ISBN, CATEGORY)
         VALUES (?, ?, ?)
@@ -217,12 +214,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['category'])) {
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 <link rel="stylesheet" href="../css/style.css">
 
+<!-- Javascript to get reusable nav element -->
 <script>
 fetch("../includes/top-menu.inc")
   .then(r => r.text())
   .then(html => document.getElementById("navbar").innerHTML = html);
 </script>
 
+<!-- Styling for book cover image -->
 <style> 
     .book-cover-box {
     width: 100%;
@@ -291,13 +290,15 @@ fetch("../includes/top-menu.inc")
 
 </div>
 
-<?php else: ?>
+<!-- handle no book found -->
+<?php else: ?> 
   <p>No book found.</p>
 <?php endif; ?>
 
 </div>
 
 <script>
+// Create Success alert when book is saved
 document.querySelectorAll('.save-btn').forEach(btn => {
   btn.addEventListener('click', function () {
 
@@ -319,7 +320,3 @@ document.querySelectorAll('.save-btn').forEach(btn => {
 
 </body>
 </html>
-
-<!-- TO DO: 
-- make Btn.innerText = "Saved ✓" where book has been saved under that category. 
-- if user clicks new category to save book as update the bts's inner text.  -->
