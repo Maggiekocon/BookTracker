@@ -239,6 +239,10 @@ fetch("../includes/top-menu.inc")
     object-fit: contain;
     display: block;
     }
+
+    .text-white {
+        text-decoration-color: white;
+    }
   
 </style>
 </head>
@@ -257,7 +261,7 @@ fetch("../includes/top-menu.inc")
 
   <div class="row g-4">
 
-    <div class="col-md-4">
+    <div class="col-md-4 ">
         <div class="book-cover-box">
             <?php if ($cover): ?>
             <img src="<?php echo htmlspecialchars($cover); ?>" class="book-cover-img">
@@ -271,19 +275,27 @@ fetch("../includes/top-menu.inc")
 
       <h2><?php echo htmlspecialchars($title); ?></h2>
 
-      <p><strong>Author:</strong> <?php echo htmlspecialchars(implode(', ', $authors)); ?></p>
-      <p><strong>ISBN:</strong> <?php echo htmlspecialchars($isbn); ?></p>
-      <p><strong>Genre:</strong> <?php echo htmlspecialchars($genre ?: 'N/A'); ?></p>
-      <p><strong>Pages:</strong> <?php echo htmlspecialchars($page_count); ?></p>
-      <p><strong>Rating:</strong> <?php echo htmlspecialchars($rating); ?></p>
+        <p><strong>Author:</strong> <?php echo htmlspecialchars(implode(', ', $authors)); ?></p>
+        <p><strong>ISBN:</strong> <?php echo htmlspecialchars($isbn); ?></p>
+        <p><strong>Genre:</strong> <?php echo htmlspecialchars($genre ?: 'N/A'); ?></p>
+        <p><strong>Pages:</strong> <?php echo htmlspecialchars($page_count); ?></p>
+        <p><strong>Rating:</strong> <?php echo htmlspecialchars($rating ?: 'N/A'); ?></p>
+        
+        <?php if (!empty($buy_link)): ?> 
+            <p>
+                <a href = '<?php echo htmlspecialchars($buy_link);?>' class = 'text-white text-decoration-none'>
+                    <button class = 'btn btn-secondary'>Buy</button>
+                </a>
+            </p>
+        <?php endif; ?>
+        
+        <p><?php echo $description ?: 'No description available.'; ?></p>
 
-      <p><?php echo $description ?: 'No description available.'; ?></p>
-
-      <div class="mt-3">
+        <div class="mt-3">
         <button class="btn btn-primary save-btn" data-category="read_next">Read Next</button>
-        <button class="btn btn-outline-primary save-btn" data-category="reading">Reading</button>
-        <button class="btn btn-outline-success save-btn" data-category="already_read">Read</button>
-      </div>
+        <button class="btn btn-outline-primary save-btn" data-category="reading">Currently Reading</button>
+        <button class="btn btn-outline-success save-btn" data-category="already_read">Already Read</button>
+        </div>
 
     </div>
   </div>

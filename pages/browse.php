@@ -1,4 +1,19 @@
 <?php
+// Start session
+session_start();
+
+// Check if User is logged in
+if (!isset($_SESSION['user_id'])) {
+    header("Location: login.php");
+    exit();
+}
+// Save user ID
+$user_id = $_SESSION['user_id'];
+
+// Connect to Database
+include("../includes/db.php");
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
 
 // Define books per page and max API items for pagination
 $books_per_page = 40;
@@ -27,7 +42,6 @@ if (!empty($search)) {
     $encodedSearch = urlencode($search);
     $startIndex = ($page - 1) * $books_per_page;
 
-    // Safe key handling
     $key = $key ?? '';
 
     // Build API URL for Google Books
