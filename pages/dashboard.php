@@ -159,7 +159,7 @@ $recent_books = $stmt->get_result();
           <!-- Cover -->
           <div class="book-placeholder">
             <?php if (!empty($book['cover_url'])): ?>
-              <img src="<?php echo htmlspecialchars($book['cover_url']); ?>" class="img-fluid">
+              <img src="<?php echo htmlspecialchars($book['cover_url']); ?>" class="h-100 object-fit-cover">
             <?php else: ?>
               Book Cover
             <?php endif; ?>
@@ -233,7 +233,7 @@ $recent_books = $stmt->get_result();
           <!-- Book cover -->
           <div class="book-placeholder">
             <?php if (!empty($book['cover_url'])): ?>
-              <img src="<?php echo htmlspecialchars($book['cover_url']); ?>" class="img-fluid">
+              <img src="<?php echo htmlspecialchars($book['cover_url']); ?>" class="h-100 object-fit-cover">
             <?php else: ?>
               Book Cover
             <?php endif; ?>

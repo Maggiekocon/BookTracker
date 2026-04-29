@@ -36,6 +36,25 @@ if ($filter === "author") {
     $queryPrefix = "intitle:";
 }
 
+// Get all saved books for this user (ISBN + category)
+$savedMap = [];
+
+$sql = "
+    SELECT isbn, category
+    FROM saved
+    WHERE user_id = ?
+";
+
+$stmt = $conn->prepare($sql);
+$stmt->bind_param("i", $user_id);
+$stmt->execute();
+
+$result = $stmt->get_result();
+
+while ($row = $result->fetch_assoc()) {
+    $savedMap[$row['isbn']] = $row['category'];
+}
+
 // Run API only if search exists
 if (!empty($search)) {
 
@@ -73,6 +92,7 @@ if (!empty($search)) {
         }
     }
 }
+
 
 // Calculate total pages for pagination
 $totalPages = 0;
@@ -154,6 +174,23 @@ fetch("../includes/top-menu.inc")
             $authors = $book['volumeInfo']['authors'] ?? [];
             $author = !empty($authors) ? $authors[0] : 'Unknown Author';
             $image = $book['volumeInfo']['imageLinks']['thumbnail'] ?? '';
+          
+            // Extract ISBN from API response
+            $isbn = 'null';
+
+            if (!empty($book['volumeInfo']['industryIdentifiers'])) {
+                foreach ($book['volumeInfo']['industryIdentifiers'] as $id) {
+                    if ($id['type'] === 'ISBN_13' || $id['type'] === 'ISBN_10') {
+                        $isbn = $id['identifier'];
+                        break;
+                    }
+                }
+            }
+
+            // Check if this book is saved by the user
+            $isSaved = isset($savedMap[$isbn]);
+            $category = $isSaved ? $savedMap[$isbn] : null;
+          
           ?>
 
           <div class="col-6 col-md-3">
@@ -163,7 +200,8 @@ fetch("../includes/top-menu.inc")
               <div class="book-placeholder">
                 <?php if (!empty($image)): ?>
                   <img src="<?php echo htmlspecialchars($image); ?>"
-                       alt="<?php echo htmlspecialchars($title); ?>">
+                       alt="<?php echo htmlspecialchars($title); ?>"
+                       class = "h-100 object-fit-cover">
                 <?php else: ?>
                   <div class="no-image">No Image Available</div>
                 <?php endif; ?>
@@ -174,10 +212,20 @@ fetch("../includes/top-menu.inc")
                 <h6 class="card-title">
                   <?php echo htmlspecialchars($title); ?>
                 </h6>
-
                 <p class="card-text">
                   <?php echo htmlspecialchars($author); ?>
                 </p>
+                
+                <!-- Category badge, diplay if saved-->
+                <!-- check if book is in query list. if so, use category-->
+             
+                <?php if ($isSaved): ?>
+                  <span class="badge bg-secondary mb-2">
+                      <?php echo htmlspecialchars(ucfirst(str_replace('_', ' ', $category))); ?>
+                  </span>
+                  <br>
+                <?php endif; ?>
+              
 
                 <!-- Link to book details page -->
                 <a href="book_details.php?id=<?php echo urlencode($book['id']); ?>"

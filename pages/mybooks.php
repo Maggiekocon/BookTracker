@@ -21,7 +21,7 @@ $filter = $_GET['filter'] ?? '';
 function getBooks($conn, $user_id, $category, $search, $filter) {
 
     $sql = "
-        SELECT b.isbn, b.title, b.cover_url,
+        SELECT b.isbn, s.category, b.title, b.cover_url,
         GROUP_CONCAT(a.name SEPARATOR ', ') AS authors
         FROM saved s
         JOIN books b ON s.isbn = b.isbn
@@ -149,7 +149,7 @@ fetch("../includes/top-menu.inc")
           <!-- COVER -->
           <div class="book-placeholder">
             <?php if (!empty($book['cover_url'])): ?>
-              <img src="<?= htmlspecialchars($book['cover_url']) ?>" class="img-fluid">
+              <img src="<?= htmlspecialchars($book['cover_url']) ?>" class=" h-100 object-fit-cover">
             <?php else: ?>
               Book Cover
             <?php endif; ?>
@@ -164,6 +164,12 @@ fetch("../includes/top-menu.inc")
             <p class="card-text">
               <?= htmlspecialchars($book['authors']) ?>
             </p>
+             <!-- Category badge -->
+            <br>
+            <span class="badge bg-secondary mb-2">
+              <?php echo ucfirst(str_replace('_', ' ', $book['category'])); ?>
+            </span>
+            <br>
 
             <!-- Link to book details page -->
             <a href="book_details.php?isbn=<?= urlencode($book['isbn']) ?>" 

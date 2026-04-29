@@ -7,13 +7,14 @@ if (!isset($_SESSION['user_id'])) {
     header("Location: login.php");
     exit();
 }
+
 // Save user ID
 $user_id = $_SESSION['user_id'];
 
 // Connect to Database
 include("../includes/db.php");
 
-//Access ID or ISBN 
+// Access ID or ISBN 
 $google_id = $_GET['id'] ?? ''; // Sent from browse.php
 $isbn = $_GET['isbn'] ?? ''; // Sent from dashboard.php or mybooks/php
 
@@ -24,10 +25,13 @@ $title = $description = $cover = $genre = $buy_link = '';
 $page_count = $rating = 'N/A';
 $authors = [];
 
-//Sent from browse.php -> use API to get book details
+
+/* =========================================================
+   Sent from browse.php -> use API to get book details
+========================================================= */
 if (!empty($google_id)) {
 
-    $url = "https://www.googleapis.com/books/v1/volumes/".$google_id."?key=".$key;
+    $url = "https://www.googleapis.com/books/v1/volumes/" . $google_id . "?key=" . $key;
 
     $ch = curl_init();
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
@@ -72,7 +76,10 @@ if (!empty($google_id)) {
     }
 }
 
-//Sent from dashboard.php or mybooks/php -> Use local Database to get book details
+
+/* =========================================================
+   Sent from dashboard.php or mybooks/php -> Use local Database
+========================================================= */
 if (!empty($isbn) && empty($title)) {
 
     $stmt = $conn->prepare("SELECT * FROM books WHERE isbn = ?");
@@ -110,9 +117,60 @@ if (!empty($isbn) && empty($title)) {
     }
 }
 
-// Save book details
+
+/* =========================================================
+   FINAL: CHECK IF BOOK IS SAVED (AFTER ISBN IS FINALIZED)
+========================================================= */
+$is_saved = false;
+
+if (!empty($isbn)) {
+
+    $stmt = $conn->prepare("
+        SELECT 1 FROM SAVED 
+        WHERE USER_ID = ? AND ISBN = ?
+        LIMIT 1
+    ");
+    $stmt->bind_param("is", $user_id, $isbn);
+    $stmt->execute();
+    $result = $stmt->get_result();
+
+    $is_saved = $result->num_rows > 0;
+}
+
+
+/* =========================================================
+   DELETE BOOK FROM SAVED
+========================================================= */
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete'])) {
+
+    header('Content-Type: application/json');
+
+    $posted_isbn = $isbn;
+
+    if (!empty($posted_isbn)) {
+
+        $stmt = $conn->prepare("
+            DELETE FROM SAVED 
+            WHERE USER_ID = ? AND ISBN = ?
+        ");
+        $stmt->bind_param("is", $user_id, $posted_isbn);
+
+        echo json_encode([
+            "status" => $stmt->execute() ? "success" : "error"
+        ]);
+    } else {
+        echo json_encode(["status" => "error"]);
+    }
+
+    exit;
+}
+
+
+/* =========================================================
+   Save book details
+========================================================= */
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['category'])) {
-    
+
     // keep system from going to a new page
     header('Content-Type: application/json');
 
@@ -124,13 +182,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['category'])) {
     }
 
     $category = $_POST['category'];
+    $posted_isbn = $isbn;
 
-    //Save book if not saved
-    if (!empty($isbn)) {
+    // Save book if not saved
+    if (!empty($posted_isbn)) {
 
         // Check if book exists in DB
         $stmt = $conn->prepare("SELECT isbn FROM books WHERE isbn = ?");
-        $stmt->bind_param("s", $isbn);
+        $stmt->bind_param("s", $posted_isbn);
         $stmt->execute();
 
         // Save in BOOKS table
@@ -144,7 +203,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['category'])) {
 
             $stmt->bind_param(
                 "sssssids",
-                $isbn,
+                $posted_isbn,
                 $title,
                 $description,
                 $cover,
@@ -182,7 +241,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['category'])) {
                 INSERT IGNORE INTO book_author (isbn, author_id)
                 VALUES (?, ?)
             ");
-            $stmt->bind_param("si", $isbn, $author_id);
+            $stmt->bind_param("si", $posted_isbn, $author_id);
             $stmt->execute();
         }
     }
@@ -194,14 +253,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['category'])) {
         ON DUPLICATE KEY UPDATE CATEGORY = VALUES(CATEGORY)
     ");
 
-    $stmt->bind_param("iss", $user_id, $isbn, $category);
+    $stmt->bind_param("iss", $user_id, $posted_isbn, $category);
 
     echo json_encode([
         "status" => $stmt->execute() ? "success" : "error"
     ]);
     exit;
 }
-
 ?>
 
 <!DOCTYPE html>
@@ -291,11 +349,14 @@ fetch("../includes/top-menu.inc")
         
         <p><?php echo $description ?: 'No description available.'; ?></p>
 
-        <div class="mt-3">
+    <div class="mt-3" id = "book-actions">
         <button class="btn btn-primary save-btn" data-category="read_next">Read Next</button>
         <button class="btn btn-outline-primary save-btn" data-category="reading">Currently Reading</button>
         <button class="btn btn-outline-success save-btn" data-category="already_read">Already Read</button>
-        </div>
+        <?php if ($is_saved): ?>
+            <button class="btn btn-danger delete-btn ">Remove</button>
+        <?php endif; ?>
+    </div>
 
     </div>
   </div>
@@ -310,7 +371,8 @@ fetch("../includes/top-menu.inc")
 </div>
 
 <script>
-// Create Success alert when book is saved
+
+// SAVE BOOK
 document.querySelectorAll('.save-btn').forEach(btn => {
   btn.addEventListener('click', function () {
 
@@ -323,11 +385,56 @@ document.querySelectorAll('.save-btn').forEach(btn => {
     .then(res => {
       if (res.status === 'success') {
         alert('Book saved successfully');
+
+        // show delete button only once
+        if (!document.querySelector('.delete-btn')) {
+
+          const container = document.getElementById('book-actions');
+
+          const deleteBtn = document.createElement('button');
+          deleteBtn.className = 'btn btn-danger delete-btn mt-2';
+          deleteBtn.textContent = 'Remove from My Books';
+
+          container.appendChild(deleteBtn);
+          attachDeleteHandler(deleteBtn);
+        }
       }
     });
 
   });
 });
+
+
+// DELETE BOOK
+function attachDeleteHandler(button) {
+  button.addEventListener('click', function () {
+
+    if (!confirm("Remove this book from your list?")) return;
+
+    fetch(window.location.href, {
+      method: 'POST',
+      headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+      body: 'delete=1'
+    })
+    .then(r => r.json())
+    .then(res => {
+      if (res.status === 'success') {
+        alert('Book removed');
+
+        button.remove();
+      }
+    });
+
+  });
+}
+
+
+// attach existing delete button on page load
+const existingDeleteBtn = document.querySelector('.delete-btn');
+if (existingDeleteBtn) {
+  attachDeleteHandler(existingDeleteBtn);
+}
+
 </script>
 
 </body>
