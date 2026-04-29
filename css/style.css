@@ -1,74 +1,222 @@
 * {
     box-sizing: border-box;
+    margin: 0;
+    padding: 0;
 }
 
+/* Main color system used across the website */
+:root {
+    --primary: #16284D;      
+    --secondary: #7AAACE;    
+    --light-blue: #9CD5FF; 
+    --background: #F7F8F0;  
+}
+
+
+/* Body styling for all pages */
 body {
     font-family: Arial, sans-serif;
-    background-color: #f8f6f2;
-    color: #222;
+    background-color: var(--background);
+    color: var(--primary);
 }
+
+
+/*Nav bar */
 
 .navbar {
-    background-color: #1e3a5f !important;
+    background-color: var(--primary) !important;
+    padding: 12px 0;
 }
 
+/* Logo */
 .navbar-brand {
     font-weight: bold;
     font-size: 22px;
+    padding: 0;
 }
 
+/* Logo image */
+.nav-logo {
+    width: 34px;
+    height: auto;
+    object-fit: contain;
+}
+
+/* Navigation links */
 .nav-link {
     font-weight: 500;
+    color: var(--background) !important;
+    margin-right: 10px;
 }
+
+/* Hover effect for links */
+.nav-link:hover {
+    color: var(--light-blue) !important;
+}
+
+/* Active page link */
+.nav-link.active {
+    color: var(--light-blue) !important;
+}
+
+/* Hamburger button */
+.navbar-toggler {
+    border: 1px solid var(--background);
+    padding: 4px 8px;
+}
+
+.navbar-toggler:focus {
+    box-shadow: none;
+}
+
+/* Logout button */
+.logout-btn {
+    border-color: var(--background);
+    color: var(--background);
+}
+
+.logout-btn:hover {
+    background-color: var(--secondary);
+    border-color: var(--secondary);
+    color: var(--primary);
+}
+
+
+/* Heading & Text */
+
+/* Main titles used across pages */
+h1,
+.section-title,
+.brand-title {
+    color: var(--primary);
+    font-weight: 700;
+}
+
+/* Center main heading */
+h1 {
+    text-align: center;
+}
+
+/* Section titles like "Dashboard", "Search", etc. */
+.section-title {
+    font-size: 28px;
+}
+
+/* Subtitles / descriptions */
+.section-subtitle,
+.login-subtitle {
+    color: var(--secondary);
+    margin-bottom: 20px;
+}
+
+
+/* CARDS */
 
 .card {
-    border: none;
+    border: 2px solid var(--secondary);
     border-radius: 16px;
-    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
-}
-
-.card:hover {
-    transform: translateY(-4px);
+    background-color: var(--background);
     transition: 0.3s ease;
 }
 
-h1 {
-    text-align: center;
-    color: #1e3a5f;
-    font-weight: bold;
+/* Hover animation */
+.card:hover {
+    transform: translateY(-4px);
+    border-color: var(--primary);
 }
 
-.btn-primary {
-    background-color: #4ea8de;
+
+/* BUTTONS */
+
+/* Main button style */
+.btn-primary,
+.login-btn {
+    background-color: var(--primary);
+    color: var(--background);
     border: none;
     border-radius: 10px;
     padding: 10px 16px;
+    font-weight: 600;
 }
 
-.btn-primary:hover {
-    background-color: #1e3a5f;
+/* Login page button  */
+.login-btn {
+    border-radius: 30px;
+    padding: 12px;
+    font-size: 1rem;
 }
+
+/* Button hover effect */
+.btn-primary:hover,
+.login-btn:hover {
+    background-color: var(--secondary);
+    color: var(--primary);
+}
+
+
+/* FORM */
+
+.custom-label {
+    font-weight: 600;
+    color: var(--primary);
+    margin-bottom: 8px;
+}
+
+/* Input fields */
+.custom-input,
+form input[type="search"] {
+    height: 52px;
+    border-radius: 30px;
+    border: 1px solid var(--secondary);
+    padding: 0 18px;
+    background-color: var(--background);
+    color: var(--primary);
+    box-shadow: none;
+}
+
+/* Search bar slightly different */
+form input[type="search"] {
+    border-radius: 10px;
+    padding: 10px;
+    height: auto;
+}
+
+/* Input focus effect */
+.custom-input:focus,
+form input[type="search"]:focus {
+    border-color: var(--primary);
+    outline: none;
+    box-shadow: none;
+}
+
+
+/* LINKS */
 
 .form-link {
     text-align: center;
     margin-top: 15px;
 }
 
-.section-title {
-    font-size: 28px;
-    font-weight: 700;
-    color: #1e3a5f;
+/* Login/register links */
+.forgot-link,
+.create-link {
+    color: var(--secondary);
+    font-weight: 600;
+    text-decoration: none;
 }
 
-.section-subtitle {
-    color: #666;
-    margin-bottom: 20px;
+.forgot-link:hover,
+.create-link:hover {
+    color: var(--primary);
+    text-decoration: underline;
 }
 
+
+/*BOOK PLACEHOLDER Fake image box for books */
 .book-placeholder {
     height: 220px;
-    background: linear-gradient(135deg, #9aa5b1, #6c757d);
-    color: white;
+    background: linear-gradient(135deg, var(--secondary), var(--light-blue));
+    color: var(--primary);
     display: flex;
     justify-content: center;
     align-items: center;
@@ -77,8 +225,91 @@ h1 {
     font-weight: bold;
 }
 
-form input[type="search"] {
-    border-radius: 10px;
-    padding: 10px;
+
+/* LOGIN PAGE */
+
+.login-page {
+    background-color: var(--background);
 }
 
+/* Main login box */
+.login-wrapper {
+    max-width: 1100px;
+    width: 100%;
+    background-color: var(--background);
+    border: 2px solid var(--secondary);
+    border-radius: 30px;
+    overflow: hidden;
+}
+
+/* Left image section */
+.login-image {
+    min-height: 650px;
+    padding: 22px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: var(--background);
+}
+
+/* Logo image styling */
+.login-image img {
+    width: auto;          
+    max-width: 300px;
+    height: auto;
+    object-fit: contain;
+    display: block;
+    background-color: var(--primary);
+    border-radius: 24px;
+    padding: 20px;
+}
+
+/* Right form section */
+.login-form-area {
+    min-height: 650px;
+    background-color: var(--background);
+    border-radius: 0 30px 30px 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+/* Login headings */
+.brand-title {
+    font-size: 2rem;
+    text-align: center;
+}
+
+.login-title {
+    font-size: 2rem;
+    margin-bottom: 8px;
+    text-align: center;
+}
+
+.login-subtitle {
+    font-size: 0.95rem;
+    text-align: center;
+    margin-bottom: 25px;
+}
+
+
+/* RESPONSIVE DESIGN */
+
+@media (max-width: 767px) {
+    .login-wrapper {
+        border-radius: 24px;
+    }
+
+    .login-form-area {
+        min-height: auto;
+        border-radius: 24px;
+    }
+
+    .brand-title {
+        font-size: 1.8rem;
+    }
+
+    .login-title {
+        font-size: 1.6rem;
+    }
+}
